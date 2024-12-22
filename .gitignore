@@ -72,11 +72,11 @@ instance/
 docs/_build/
 
 # sensitive data
-.pem
-.crt
-.pem.crt
-.key
-.pem.key
+*.pem
+*.crt
+*.pem.crt
+*.key
+*.pem.key
 
 # PyBuilder
 .pybuilder/
