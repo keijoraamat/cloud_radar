@@ -78,6 +78,12 @@ docs/_build/
 *.key
 *.pem.key
 
+# terraform things
+*.lock.hcl
+.terraform/
+*.tfstate
+*.tfstate.backup
+
 # PyBuilder
 .pybuilder/
 target/
