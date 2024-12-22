@@ -1,0 +1,6 @@
+{
+    "idf.openOcdConfigs": [
+        "board/esp32c3-bridge.cfg"
+    ],
+    "idf.port": "/dev/ttyACM0"
+}
