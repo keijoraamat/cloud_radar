@@ -71,6 +71,13 @@ instance/
 # Sphinx documentation
 docs/_build/
 
+# sensitive data
+.pem
+.crt
+.pem.crt
+.key
+.pem.key
+
 # PyBuilder
 .pybuilder/
 target/
