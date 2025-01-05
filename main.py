@@ -4,14 +4,15 @@ import ssl
 import json  # For converting radar data to JSON format
 import paho.mqtt.client as mqtt
 import os
+import datetime
 
 def extract_radar_data(serial_port, baudrate=256000, client=None, topic=None):
     print("starting radar data extraction")
     # Regular expressions to capture relevant information
-    timestamp_pattern = r"^(\d{2}:\d{2}:\d{2}\.\d{3})"
     out_status_pattern = r"OUT pin status: (\w+)"
     moving_obj_pattern = r"Moving object at distance: (\d+) cm"
     stationary_obj_pattern = r"Stationary object at distance: (\d+) cm"
+    separator_obj = "--------------------"
 
     # Open the serial port
     with serial.Serial(serial_port, baudrate=baudrate, timeout=1) as ser:
@@ -19,31 +20,44 @@ def extract_radar_data(serial_port, baudrate=256000, client=None, topic=None):
         while True:
             try:
                 line = ser.readline().decode('utf-8').strip()
-                timestamp_match = re.search(timestamp_pattern, line)
-                out_status_match = re.search(out_status_pattern, line)
-                moving_obj_match = re.search(moving_obj_pattern, line)
-                stationary_obj_match = re.search(stationary_obj_pattern, line)
 
-                # Extract and send values if all matches are found
-                if timestamp_match and out_status_match and moving_obj_match and stationary_obj_match:
-                    data = {
-                        "timestamp": timestamp_match.group(1),
-                        "out_status": out_status_match.group(1),
-                        "moving_obj_distance": int(moving_obj_match.group(1)),
-                        "stationary_obj_distance": int(stationary_obj_match.group(1)),
-                    }
+                if not line:  # Skip empty lines
+                    continue
 
-                    # Print the extracted data in real-time
-                    print(data)
+                # Add the line to the current data chunk
+                data_chunk.append(line)
 
-                    # Publish to AWS IoT Core
-                    if client and topic:
-                        payload = json.dumps(data)
-                        result = client.publish(topic, payload)
-                        result.wait_for_publish()  # Ensure the message is sent
+                # Check for the separator indicating the end of a chunk
+                if separator_obj in line:
+                    # Join the accumulated lines for parsing
+                    full_data = "\n".join(data_chunk)
+                    data_chunk = []  # Reset for the next chunk
+
+                    # Extract relevant fields
+                    out_status_match = re.search(out_status_pattern, full_data)
+                    moving_obj_match = re.search(moving_obj_pattern, full_data)
+                    stationary_obj_match = re.search(stationary_obj_pattern, full_data)
+
+                    # Process the data if all patterns match
+                    if out_status_match and moving_obj_match and stationary_obj_match:
+                        data = {
+                            "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            "out_status": out_status_match.group(1),
+                            "moving_obj_distance": int(moving_obj_match.group(1)),
+                            "stationary_obj_distance": int(stationary_obj_match.group(1)),
+                        }
+
+                        # Print the extracted data in real-time
+                        print(data)
+
+                        # Publish to AWS IoT Core
+                        if client and topic:
+                           payload = json.dumps(data)
+                           result = client.publish(topic, payload)
+                           result.wait_for_publish()  # Ensure the message is sent
                 else:
                     print("Error in parsing the line")
-                    print(f"TS: {timestamp_match}, out_stat: {out_status_match}, moving_o: {moving_obj_match}, stationary: {stationary_obj_match}")
+                    print(full_data)
 
             except KeyboardInterrupt:
                 print("Stopping data extraction.")
