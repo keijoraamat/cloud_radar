@@ -58,7 +58,7 @@ def on_publish(client, userdata, mid):
     print(f"Message {mid} published!")
 
 # Configuration
-broker = "angi07afcqoi3-ats.iot.eu-north-1.amazonaws.com"
+broker = "angi07afcqoi3-ats.iot.eu-central-1.amazonaws.com"
 port = 8883
 topic = "your/topic/here"
 serial_port = "/dev/ttyACM0"
