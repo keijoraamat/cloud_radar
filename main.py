@@ -3,6 +3,7 @@ import serial
 import ssl
 import json  # For converting radar data to JSON format
 import paho.mqtt.client as mqtt
+import os
 
 def extract_radar_data(serial_port, baudrate=256000, client=None, topic=None):
     print("starting radar data extraction")
@@ -65,9 +66,10 @@ serial_port = "/dev/ttyACM0"
 baud_rate = 256000
 
 # Paths to certificates
-ca_cert = "root-CA.pem"
-client_cert = "certificate.pem"
-private_key = "private.key"
+current_dir = os.path.dirname(os.path.abspath(__file__))
+ca_cert = os.path.join(current_dir, "root-CA.pem")
+client_cert = os.path.join(current_dir, "certificate.pem")
+private_key = os.path.join(current_dir, "private.key")
 
 # Initialize MQTT client
 client = mqtt.Client()
