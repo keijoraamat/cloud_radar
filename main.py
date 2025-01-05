@@ -20,6 +20,7 @@ def extract_radar_data(serial_port, baudrate=256000, client=None, topic=None):
         while True:
             try:
                 line = ser.readline().decode('utf-8').strip()
+                data_chunk = []
 
                 if not line:  # Skip empty lines
                     continue
